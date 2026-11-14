@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Công & Phương Diary 🌸</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Playfair+Display:ital,wght@0,600;1,400&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Quicksand', sans-serif; background-color: #FAF6F0; }
+        .font-handwriting { font-family: 'Caveat', cursive; }
+        .font-serif-title { font-family: 'Playfair Display', serif; }
+        .paper-card {
+            background: rgba(255, 253, 249, 0.92);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(243, 237, 226, 0.9);
+            transition: all 0.4s ease;
+        }
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+
+        @keyframes rainFall {
+            0% { transform: translateY(-20px) rotate(10deg); opacity: 0; }
+            40% { opacity: 0.85; }
+            100% { transform: translateY(350px) rotate(10deg); opacity: 0; }
+        }
+        .raindrop {
+            position: absolute;
+            width: 2px;
+            height: 18px;
+            background: linear-gradient(transparent, #93C5FD);
+            border-radius: 99px;
+            animation: rainFall linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(260px) rotate(0deg) scale(0.8); opacity: 0; }
+            25% { opacity: 1; }
+            75% { opacity: 1; }
+            100% { transform: translateY(-30px) rotate(360deg) scale(1.1); opacity: 0; }
+        }
+        .floating-item {
+            position: absolute;
+            animation: floatUp linear infinite;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            15% { transform: scale(1.08); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.06); }
+            60% { transform: scale(1); }
+        }
+        .animated-avatar {
+            animation: heartbeat 2.5s infinite ease-in-out;
+        }
+
+        @media (min-hover: hover) {
+            .couple-avatar-container:hover .couple-avatar {
+                transform: scale(3.2);
+                z-index: 60;
+                box-shadow: 0 20px 30px rgba(0,0,0,0.3);
+                animation: none;
+            }
+        }
+    </style>
+</head>
+<body class="flex justify-center items-center min-h-screen p-0 sm:p-4">
+
+    <!-- Container khung điện thoại -->
+    <div id="app-container" class="w-full sm:max-w-[430px] h-screen sm:h-[880px] sm:rounded-[40px] bg-[#FAF6F0] shadow-2xl flex flex-col relative overflow-hidden border border-[#EBE3D5] transition-colors duration-700">
+
+        <!-- MÀN HÌNH KHÓA -->
+        <div id="lock-screen" class="absolute inset-0 bg-[#FAF6F0] z-50 flex flex-col justify-center items-center p-6 text-center transition-opacity duration-500">
+            <div class="couple-avatar-container relative cursor-pointer mb-5 transition-transform duration-300" onclick="handleImageClick(event)" ondblclick="handleImageDblClick(event)">
+                <div class="absolute -inset-1.5 bg-gradient-to-r from-pink-400 to-amber-300 rounded-full blur opacity-70 animate-pulse"></div>
+                <img id="couple-img" src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=600&q=80" alt="Couple" class="couple-avatar animated-avatar relative w-24 h-24 rounded-full object-cover shadow-lg border-4 border-white transition-transform duration-300">
+            </div>
+
+            <h1 class="font-serif-title text-2xl text-[#5C4033] mb-2">Công & Phương Diary 🌸</h1>
+            <p class="text-sm text-[#8C7A6B] mb-6 px-4">Nhập đúng ngày kỷ niệm của chúng mình để mở khóa trang sổ nhé ❤️</p>
+            
+            <div class="flex gap-2 mb-4 w-full max-w-[260px]">
+                <input type="number" id="input-day" placeholder="DD" class="w-1/3 px-3 py-3 rounded-2xl bg-white border border-[#E3D5C6] text-[#5C4033] text-center font-bold text-base focus:outline-none focus:ring-2 focus:ring-[#D8A47F] shadow-sm">
+                <input type="number" id="input-month" placeholder="MM" class="w-1/3 px-3 py-3 rounded-2xl bg-white border border-[#E3D5C6] text-[#5C4033] text-center font-bold text-base focus:outline-none focus:ring-2 focus:ring-[#D8A47F] shadow-sm">
+                <input type="number" id="input-year" placeholder="YYYY" class="w-1/3 px-3 py-3 rounded-2xl bg-white border border-[#E3D5C6] text-[#5C4033] text-center font-bold text-base focus:outline-none focus:ring-2 focus:ring-[#D8A47F] shadow-sm">
+            </div>
+            
+            <button onclick="unlockApp()" class="w-full max-w-[260px] bg-[#D8A47F] text-white py-3 rounded-2xl font-semibold shadow-md active:scale-95 transition">Mở Sổ 🗝️</button>
+            <p id="error-msg" class="text-xs text-red-400 mt-3 hidden">Sai mật mã rồi nha! Quên ngày kỷ niệm là bị phạt đó 😝</p>
+        </div>
+
+        <!-- HEADER ỨNG DỤNG -->
+        <header id="app-header" class="px-6 pt-6 pb-4 flex justify-between items-center border-b border-[#EFE8DD]/70 bg-white/50 backdrop-blur-sm z-10">
+            <div>
+                <div class="flex items-center gap-1.5">
+                    <span id="time-of-day-badge" class="text-[10px] bg-[#F5EBE6] text-[#8C7A6B] px-2 py-0.5 rounded-full font-bold">☀️ Ban ngày</span>
+                </div>
+                <h1 class="font-serif-title text-xl text-[#4A3B32] mt-0.5">Công & Phương Diary 🌸</h1>
+            </div>
+            <div id="weather-badge" class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-lg shadow-sm">🌸</div>
+        </header>
+
+        <!-- NỘI DUNG CHÍNH -->
+        <main id="main-content" class="flex-1 overflow-y-auto p-5 space-y-5 pb-24 z-10">
+            <!-- Render bằng JS -->
+        </main>
+
+        <!-- THANH ĐIỀU HƯỚNG DƯỚI CÙNG -->
+        <nav class="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-[#EFE8DD] px-3 py-3 flex justify-around items-center z-20">
+            <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center text-[#C27867] transition w-14">
+                <span class="text-xl">🏠</span>
+                <span class="text-[10px] font-semibold mt-1">Trang chủ</span>
+            </button>
+            <button onclick="switchTab('diary')" id="nav-diary" class="flex flex-col items-center text-[#8C7A6B] hover:text-[#C27867] transition w-14">
+                <span class="text-xl">✍️</span>
+                <span class="text-[10px] font-semibold mt-1">Nhật ký</span>
+            </button>
+            <button onclick="switchTab('games')" id="nav-games" class="flex flex-col items-center text-[#8C7A6B] hover:text-[#C27867] transition w-14">
+                <span class="text-xl">🎮</span>
+                <span class="text-[10px] font-semibold mt-1">Giải trí</span>
+            </button>
+            <button onclick="switchTab('music')" id="nav-music" class="flex flex-col items-center text-[#8C7A6B] hover:text-[#C27867] transition w-14">
+                <span class="text-xl">🎧</span>
+                <span class="text-[10px] font-semibold mt-1">Âm thanh</span>
+            </button>
+            <button onclick="switchTab('sos')" id="nav-sos" class="flex flex-col items-center text-[#8C7A6B] hover:text-[#C27867] transition w-14">
+                <span class="text-xl">🛎️</span>
+                <span class="text-[10px] font-semibold mt-1">Tiếp tế</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <!-- JAVASCRIPT XỬ LÝ LOGIC -->
+    <script>
+        const couplePhotoUrl = "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=600&q=80";
+        document.getElementById("couple-img").src = couplePhotoUrl;
+
+        let isZoomed = false;
+        function handleImageClick(e) {
+            const img = document.getElementById("couple-img");
+            if (window.innerWidth <= 768) {
+                if (!isZoomed) {
+                    img.style.position = "fixed";
+                    img.style.top = "50%";
+                    img.style.left = "50%";
+                    img.style.transform = "translate(-50%, -50%) scale(4.5)";
+                    img.style.zIndex = "100";
+                    img.style.borderRadius = "20px";
+                    img.style.animation = "none";
+                    isZoomed = true;
+                }
+            }
+        }
+
+        function handleImageDblClick(e) {
+            const img = document.getElementById("couple-img");
+            if (window.innerWidth <= 768 && isZoomed) {
+                img.style.position = "static";
+                img.style.transform = "none";
+                img.style.zIndex = "1";
+                img.style.borderRadius = "9999px";
+                img.style.animation = "heartbeat 2.5s infinite ease-in-out";
+                isZoomed = false;
+            }
+        }
+
+        const roomImageUrl = "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80";
+
+        const anniversary = new Date("2026-05-17");
+        function calculateDays() {
+            const today = new Date();
+            const diffTime = today - anniversary;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays >= 0 ? diffDays : 0;
+        }
+        const totalDays = calculateDays();
+
+        function isNightTime() {
+            const hour = new Date().getHours();
+            return hour >= 18 || hour < 6;
+        }
+
+        function updateTimeOfDayUI() {
+            const badge = document.getElementById("time-of-day-badge");
+            if (badge) {
+                if (isNightTime()) {
+                    badge.innerHTML = "🌙 Buổi tối ấm áp";
+                    badge.className = "text-[10px] bg-indigo-900 text-amber-200 px-2.5 py-0.5 rounded-full font-bold";
+                } else {
+                    badge.innerHTML = "☀️ Ban ngày rạng rỡ";
+                    badge.className = "text-[10px] bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-bold";
+                }
+            }
+        }
+
+        const roomWeatherThemes = {
+            "happy": { label: "🥰 Hạnh phúc", badge: "🌈", overlayColor: "rgba(254, 240, 138, 0.2)", caption: "Nắng ấm & cầu vồng ghé thăm căn phòng 🌈", particles: ["🌸", "🌿", "🌈", "☀️", "🦋", "✨"], type: "float" },
+            "joy": { label: "😊 Vui vẻ", badge: "🌻", overlayColor: "rgba(253, 230, 138, 0.15)", caption: "Góc phòng ngập tràn năng lượng tươi tắn 🌻", particles: ["🌻", "🍀", "🌼", "✨"], type: "float" },
+            "miss": { label: "🥺 Nhớ anh", badge: "💌", overlayColor: "rgba(244, 114, 182, 0.2)", caption: "Căn phòng phủ đầy sắc hồng nhớ nhung 💖", particles: ["💖", "🌸", "💕", "☁️"], type: "float" },
+            "tired": { label: "😫 Hơi mệt", badge: "🌙", overlayColor: "rgba(30, 27, 75, 0.35)", caption: "Bật đèn ngủ dịu êm để em nghỉ ngơi nhé 🌙", particles: ["⭐", "☁️", "💤", "✨"], type: "float" },
+            "sad": { label: "😢 Buồn xíu", badge: "🌧️", overlayColor: "rgba(15, 23, 42, 0.4)", caption: "Ngoài khung cửa kính đang đổ mưa... 🌧️", particles: [], type: "rain" }
+        };
+
+        function updateRoomWeather(moodKey) {
+            const theme = roomWeatherThemes[moodKey] || roomWeatherThemes["happy"];
+            const overlay = document.getElementById("room-weather-overlay");
+            const effectsLayer = document.getElementById("room-weather-effects");
+            const captionEl = document.getElementById("room-weather-caption");
+            const badge = document.getElementById("weather-badge");
+            const bgImg = document.getElementById("room-bg-img");
+
+            if (!overlay || !bgImg) return;
+            const nightFilter = isNightTime() ? "brightness(0.85) contrast(1.05)" : "brightness(1)";
+            bgImg.style.filter = nightFilter;
+            overlay.style.backgroundColor = theme.overlayColor;
+            captionEl.innerText = theme.caption + (isNightTime() ? " (Chế độ ban đêm)" : "");
+            badge.innerText = theme.badge;
+            effectsLayer.innerHTML = "";
+
+            if (theme.type === "rain") {
+                for (let i = 0; i < 40; i++) {
+                    const drop = document.createElement("div");
+                    drop.className = "raindrop";
+                    drop.style.left = Math.random() * 100 + "%";
+                    drop.style.animationDuration = (0.5 + Math.random() * 0.5) + "s";
+                    drop.style.animationDelay = Math.random() * 2 + "s";
+                    effectsLayer.appendChild(drop);
+                }
+            } else if (theme.type === "float") {
+                for (let i = 0; i < 15; i++) {
+                    const item = document.createElement("div");
+                    item.className = "floating-item";
+                    item.innerText = theme.particles[Math.floor(Math.random() * theme.particles.length)];
+                    item.style.left = Math.random() * 90 + "%";
+                    item.style.fontSize = (14 + Math.random() * 10) + "px";
+                    item.style.animationDuration = (4 + Math.random() * 4) + "s";
+                    item.style.animationDelay = Math.random() * 3 + "s";
+                    effectsLayer.appendChild(item);
+                }
+            }
+        }
+
+        const mealsData = {
+            breakfast: ["Phở bò tái lăn 🍜", "Bánh mì chảo / Bánh mì pate 🥖", "Bún riêu cua 🍲", "Xôi xéo hành phi 🍚", "Bánh cuốn nóng chả lụa 🥟", "Hủ tiếu Nam Vang 🍜", "Bún bò Huế 🌶️"],
+            lunch: ["Cơm tấm sườn bì chả 🍛", "Cơm gà xối mỡ 🍗", "Bún đậu mắm tôm 🥢", "Cơm rang dưa bò 🍳", "Bún chả Hà Nội 🍖", "Cơm văn phòng sườn xào chua ngọt 🍱", "Mì Ý sốt bò băm 🍝"],
+            dinner: ["Lẩu Thái Tomyum chua cay 🍲", "Thịt nướng BBQ Hàn Quốc 🥩", "Cơm nhà canh cua cà pháo 🍚", "Gà rán & Khoai tây chiên 🍗", "Bánh xèo nem lụi 🥞", "Lẩu gà lá é 🍲", "Cháo sườn quẩy nóng 🥣"],
+            snack: ["Bánh tráng trộn & Trứng cút 🥗", "Chân gà sả tắc cay giòn 🍗", "Khoai tây lắc phô mai 🍟", "Kem tươi / Kem bơ Đà Lạt 🍦", "Bánh su kem / Tiramisu ngọt ngào 🍰", "Nem chua rán & Cá viên chiên 🍢", "Sữa chua trân châu hạ long 🍧", "Bánh flan caramen 🍮", "Hoa quả dầm sữa chua 🍓"],
+            drinks: ["Trà sữa trân châu đường đen 🧋", "Trà đào cam sả thanh mát 🍑", "Matcha Latte kem cheese 🍵", "Cà phê muối đậm đà ☕", "Nước ép dưa hấu / cam tươi 🍊", "Trà chanh giã tay 🍋", "Sữa tươi trân châu đường hổ 🥛", "Trà vải hoa hồng 🌹"]
+        };
+
+        const challengeCards = [
+            { type: 'question', text: "Câu hỏi: Món mì cay cấp độ mấy là món tủ mà anh thích ăn nhất khi đi hẹn hò? 🍜" },
+            { type: 'dare', text: "Thử thách: Gửi ngay cho anh một tấm ảnh selfie cute nhất lúc này! 📸" },
+            { type: 'question', text: "Câu hỏi: Trận đá bóng gần nhất anh ghi được mấy bàn thắng, em có nhớ không? ⚽" },
+            { type: 'dare', text: "Đặc quyền: Em nhận được 1 phiếu 'Miễn giận' hoặc 'Sai vặt anh 1 việc' hôm nay! 🎟️" },
+            { type: 'question', text: "Câu hỏi: Sắc đỏ nào tượng trưng cho năng lượng và sở thích nổi bật của anh? ❤️" },
+            { type: 'dare', text: "Thử thách: Ghi âm một câu nói 'Em nhớ anh' gửi qua Zalo ngay lập tức! 🎙️" },
+            { type: 'question', text: "Câu hỏi: Khi chơi game cùng bạn bè, anh hay chơi chung với ai và thích vị trí nào? 🎮" },
+            { type: 'question', text: "Câu hỏi: Địa điểm du lịch tiếp theo mà anh muốn tạo bất ngờ đưa em đi là ở đâu? ✈️" }
+        ];
+
+        const quizQuestions = [
+            { q: "Màu sắc yêu thích đặc trưng mang lại năng lượng và phong cách cho anh là màu gì?", options: ["Màu xanh dương", "Màu đỏ rực rỡ", "Màu hồng pastel"], answer: 1 },
+            { q: "Món ăn vặt cay xé lưỡi nào anh cực kỳ ghiền mỗi khi hẹn hò?", options: ["Mì cay cấp độ cao", "Bánh tráng nướng", "Lẩu Thái chua cay"], answer: 0 },
+            { q: "Môn thể thao ngoài trời nào anh luôn nhiệt huyết tham gia ngay cả khi trời mưa?", options: ["Bóng rổ", "Đá bóng", "Cầu lông"], answer: 1 },
+            { q: "Hoạt động giải trí cùng bạn bè vào cuối tuần của anh là gì?", options: ["Chơi game online", "Đi cà phê một mình", "Ngủ nướng cả ngày"], answer: 0 },
+            { q: "Điều mà anh thích nhất khi ở cạnh Phương là gì?", options: ["Tạo những bất ngờ dễ thương cho em", "Im lặng không nói gì", "Bắt em làm việc nhà"], answer: 0 },
+            { q: "Khi chơi tựa game Valorant, nhân vật tủ mà anh hay chọn là ai?", options: ["Jett & Reyna", "Clove & Reyna", "Sage & Viper"], answer: 1 },
+            { q: "Trong tựa game Liên Quân Mobile, anh thường thích chơi vị trí hoặc tướng nào?", options: ["Đỡ đòn / Trợ thủ hoặc Yue", "Xạ thủ đi đường rồng", "Sát thủ đi rừng"], answer: 0 },
+            { q: "Thể loại âm nhạc nào anh hay nghe và dùng để sáng tác trên BandLab?", options: ["R&B và Melodic Hip-hop", "Nhạc trữ tình bolero", "Nhạc rock cổ điển"], answer: 0 },
+            { q: "Nghệ sĩ Việt Nam nào nằm trong danh sách yêu thích của anh?", options: ["HIEUTHUHAI, Wren Evans, Quang Hùng MasterD", "Mỹ Tâm, Đàm Vĩnh Hưng", "Sơn Tùng M-TP, Jack"], answer: 0 },
+            { q: "Hành động lãng mạn mà anh rất thích làm cho Phương là gì?", options: ["Tạo bất ngờ bất ngờ không báo trước", "Mua quà đắt tiền mỗi ngày", "Nhắn tin qua loa"], answer: 0 },
+            { q: "Thức uống quen thuộc tại quán quen của anh là gì?", options: ["Cà phê & trà tại Highlands hoặc Phê La", "Nước ngọt có ga", "Rượu vang đỏ"], answer: 0 },
+            { q: "Mục tiêu lớn nhất của anh khi cùng Phương tích lũy quỹ tim là gì?", options: ["Lên kế hoạch du lịch thật hoành tráng", "Mua xe hơi thể thao", "Xây nhà 5 tầng"], answer: 0 },
+            { q: "Phong cách thời trang yêu thích của anh thường chọn từ thương hiệu nào?", options: ["Zara", "Gucci", "Louis Vuitton"], answer: 0 },
+            { q: "Khi cùng anh đi chơi xa, Phương thích nhất điều gì từ anh?", options: ["Sự quan tâm chu đáo và chụp ảnh đẹp cho em", "Để em tự lo mọi thứ", "Đi ngủ sớm không đi chơi"], answer: 0 },
+            { q: "Món ăn nào anh có thể ăn hoài không chán vào các buổi tối?", options: ["Mì cay hoặc các món đậm vị", "Cháo trắng loãng", "Rau luộc trừ cơm"], answer: 0 },
+            { q: "Đặc điểm nhận diện phong cách của anh trên TikTok (shy) là gì?", options: ["Lifestyle và thời trang trẻ trung", "Review xe máy phân khối lớn", "Hướng dẫn nấu ăn gia đình"], answer: 0 },
+            { q: "Khi rảnh rỗi, anh thích cùng bạn bè làm gì nhất?", options: ["Lập team chiến game hoặc đá bóng", "Ngồi thiền định", "Đi ngủ không gọi ai"], answer: 0 },
+            { q: "Mỗi khi Phương giận, phản ứng đầu tiên của anh là gì?", options: ["Tìm cách dỗ dành và tạo bất ngờ làm hòa", "Giận ngược lại", "Bơ luôn không quan tâm"], answer: 0 },
+            { q: "Chuyến du lịch nào gần đây để lại nhiều kỷ niệm nhất cho hai đứa?", options: ["Hà Nội, Ninh Bình, Thái Bình, Đà Nẵng", "Đi quanh thành phố không mục đích", "Ở nhà xem TV"], answer: 0 },
+            { q: "Tên món quà tinh thần anh hay gửi gắm vào các đoạn podcast dành riêng cho Phương là gì?", options: ["Lời thủ thỉ yêu thương trước khi ngủ", "Bản tin thời sự", "Hướng dẫn lập trình C#"], answer: 0 },
+            { q: "Màu áo thi đấu đá bóng yêu thích của anh mang sắc màu gì?", options: ["Màu đỏ nổi bật", "Màu đen tuyền", "Màu trắng xám"], answer: 0 },
+            { q: "Đồ vật bất ly thân khi anh ra đường đi làm hay đi chơi là gì?", options: ["Đồng hồ Tissot và điện thoại", "Kính râm bản to", "Mũ trùm đầu"], answer: 0 },
+            { q: "Khi chơi game cùng bạn bè, anh thường đóng vai trò gì trong team?", options: ["Cầm trịch chiến thuật hoặc hỗ trợ đồng đội", "Hay phá game", "Chỉ đứng ngắm cảnh"], answer: 0 },
+            { q: "Món quà bất ngờ nhất mà anh từng ấp ủ dành cho Phương là gì?", options: ["Chuyến đi chơi xa và những món quà nhỏ tinh tế", "Một cục đá ven đường", "Tờ giấy trắng"], answer: 0 },
+            { q: "Cảm giác của anh thế nào mỗi lần được vào bếp nấu hoặc mua món mì cay cho Phương?", options: ["Hạnh phúc nhìn em ăn ngon miệng", "Thấy bình thường", "Thấy mệt mỏi"], answer: 0 }
+        ];
+
+        let currentQuizIndex = 0;
+        let heartScore = parseInt(localStorage.getItem('our_heart_score')) || 0;
+
+        let ourJourneys = JSON.parse(localStorage.getItem('our_journeys_list')) || [
+            { id: 1, title: "Chuyến đi Đà Nẵng đầu tiên 🌊", date: "Tháng 06/2026", img: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=600&q=80", desc: "Cùng nhau nắm tay đi dạo bờ biển dài, ăn hải sản và ngắm hoàng hôn tuyệt đẹp." }
+        ];
+
+        const podcastEpisodes = [
+            { title: "Tập 1: Gửi em những ngày đi làm mệt mỏi 🎙️", desc: "Bấm nghe để thấy anh luôn ở ngay bên cạnh cổ vũ em nhé!", date: "Lời nhắn từ Công" },
+            { title: "Tập 2: Cảm ơn em vì đã xuất hiện 🌸", desc: "Những điều anh muốn thủ thỉ với công chúa nhỏ trước khi đi ngủ.", date: "Lời nhắn từ Công" }
+        ];
+
+        let diaryEntries = JSON.parse(localStorage.getItem('our_diary_entries_v3')) || [
+            { id: 1, date: "17/05/2026", moodKey: "happy", title: "Trang đầu tiên của cuốn sổ", content: "Ngày chính thức bắt đầu hành trình của hai đứa. Căn phòng ngập tràn ánh nắng và hoa anh đào!" }
+        ];
+
+        window.onload = function() {
+            updateTimeOfDayUI();
+            switchTab('home');
+        };
+
+        function unlockApp() {
+            const d = document.getElementById("input-day").value.trim();
+            const m = document.getElementById("input-month").value.trim();
+            const y = document.getElementById("input-year").value.trim();
+
+            if (d === "17" && (m === "5" || m === "05") && y === "2026") {
+                document.getElementById("lock-screen").style.opacity = '0';
+                setTimeout(() => { document.getElementById("lock-screen").style.display = 'none'; }, 500);
+            } else {
+                const err = document.getElementById("error-msg");
+                err.classList.remove("hidden");
+                err.classList.add("animate-bounce");
+                setTimeout(() => err.classList.remove("animate-bounce"), 1000);
+            }
+        }
+
+        function updateNavActive(activeTab) {
+            const tabs = ['home', 'diary', 'games', 'music', 'sos'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`nav-${t}`);
+                if (t === activeTab) {
+                    btn.classList.remove('text-[#8C7A6B]');
+                    btn.classList.add('text-[#C27867]');
+                } else {
+                    btn.classList.remove('text-[#C27867]');
+                    btn.classList.add('text-[#8C7A6B]');
+                }
+            });
+        }
+
+        function addNewJourney() {
+            const title = document.getElementById('journey-title').value.trim();
+            const date = document.getElementById('journey-date').value.trim();
+            const img = document.getElementById('journey-img').value.trim();
+            const desc = document.getElementById('journey-desc').value.trim();
+
+            if (!title || !desc) {
+                alert("Vui lòng nhập tên hành trình và đôi lời tâm sự nhé! ✨");
+                return;
+            }
+
+            const newJ = {
+                id: Date.now(),
+                title: title,
+                date: date || "Kỷ niệm chung",
+                img: img || "https://images.unsplash.com/photo-1522748987723-d2d149021e10?auto=format&fit=crop&w=600&q=80",
+                desc: desc
+            };
+
+            ourJourneys.unshift(newJ);
+            localStorage.setItem('our_journeys_list', JSON.stringify(ourJourneys));
+            switchTab('home');
+        }
+
+        function saveDiary() {
+            const moodKey = document.getElementById('diary-mood').value;
+            const title = document.getElementById('diary-title').value.trim();
+            const content = document.getElementById('diary-content').value.trim();
+
+            if (!title || !content) {
+                alert("Viết tiêu đề và nội dung đã nhé công chúa ơi! ✍️");
+                return;
+            }
+
+            const todayStr = new Date().toLocaleDateString('vi-VN');
+            const newEntry = { id: Date.now(), date: todayStr, moodKey: moodKey, title: title, content: content };
+
+            diaryEntries.unshift(newEntry);
+            localStorage.setItem('our_diary_entries_v3', JSON.stringify(diaryEntries));
+            switchTab('diary');
+            updateRoomWeather(moodKey);
+        }
+
+        function spinFoodCategory(category, resultElementId) {
+            const box = document.getElementById(resultElementId);
+            const list = mealsData[category];
+            box.innerText = "Đang chọn món...";
+            setTimeout(() => {
+                const randomItem = list[Math.floor(Math.random() * list.length)];
+                box.innerText = randomItem;
+            }, 350);
+        }
+
+        function drawCard() {
+            const cardBox = document.getElementById('card-result');
+            const randomCard = challengeCards[Math.floor(Math.random() * challengeCards.length)];
+            
+            if (randomCard.type === 'question') {
+                cardBox.innerHTML = `
+                    <p class="font-bold text-[#5C4033] mb-2">${randomCard.text}</p>
+                    <div class="space-y-2">
+                        <input type="text" id="card-answer-input" placeholder="Nhập câu trả lời của em vào đây..." class="w-full bg-white border border-[#E3D5C6] rounded-xl px-3 py-2 text-xs text-[#5C4033] focus:outline-none">
+                        <button onclick="submitCardAnswer()" class="w-full bg-[#C27867] text-white py-2 rounded-xl text-xs font-bold active:scale-95 transition">Gửi Câu Trả Lời (+1 💖)</button>
+                    </div>
+                `;
+            } else {
+                cardBox.innerHTML = `
+                    <p class="font-bold text-[#5C4033] mb-2">${randomCard.text}</p>
+                    <button onclick="addHeartScore(1); alert('Hoàn thành thử thách! +1 tim ❤️')" class="w-full bg-[#D8A47F] text-white py-2 rounded-xl text-xs font-bold active:scale-95 transition">Đã hoàn thành (+1 💖)</button>
+                `;
+            }
+            cardBox.classList.remove('hidden');
+        }
+
+        function submitCardAnswer() {
+            const ans = document.getElementById('card-answer-input').value.trim();
+            if (!ans) {
+                alert("Em chưa nhập câu trả lời kìa! 🥺");
+                return;
+            }
+            addHeartScore(1);
+            alert("Đã lưu câu trả lời và +1 tim vào quỹ tình yêu của hai đứa! ❤️");
+            document.getElementById('card-result').classList.add('hidden');
+        }
+
+        function checkQuizAnswer(selectedIdx) {
+            const qObj = quizQuestions[currentQuizIndex];
+            const feedback = document.getElementById('quiz-feedback');
+            if (selectedIdx === qObj.answer) {
+                feedback.innerHTML = "<span class='text-emerald-600 font-bold'>Chuẩn không cần chỉnh! +10 tim cho em ❤️</span>";
+                addHeartScore(10);
+                setTimeout(() => {
+                    currentQuizIndex = (currentQuizIndex + 1) % quizQuestions.length;
+                    renderQuiz();
+                }, 1200);
+            } else {
+                feedback.innerHTML = "<span class='text-red-500 font-bold'>Sai mất tiêu rồi, chọn lại đi công chúa ơi! 😝</span>";
+            }
+        }
+
+        function renderQuiz() {
+            const quizContainer = document.getElementById('quiz-container');
+            if (!quizContainer) return;
+            const qObj = quizQuestions[currentQuizIndex];
+            let optionsHTML = qObj.options.map((opt, idx) => `
+                <button onclick="checkQuizAnswer(${idx})" class="w-full text-left px-3 py-2 rounded-xl bg-white border border-[#E3D5C6] text-xs font-medium text-[#5C4033] hover:bg-[#F5EBE6] transition">${opt}</button>
+            `).join('');
+
+            quizContainer.innerHTML = `
+                <p class="text-xs font-bold text-[#4A3B32] mb-2">Câu ${currentQuizIndex + 1}/${quizQuestions.length}: ${qObj.q}</p>
+                <div class="space-y-1.5">${optionsHTML}</div>
+                <div id="quiz-feedback" class="text-xs mt-2 min-h-[18px]"></div>
+            `;
+        }
+
+        function addHeartScore(points = 1) {
+            heartScore += points;
+            localStorage.setItem('our_heart_score', heartScore);
+            const scoreEl = document.getElementById('heart-score-display');
+            if (scoreEl) scoreEl.innerText = heartScore;
+            const progEl = document.getElementById('heart-progress-bar');
+            if (progEl) progEl.style.width = Math.min((heartScore / 100) * 100, 100) + "%";
+        }
+
+        function calculateTravelPlan() {
+            const location = document.getElementById('travel-location').value.trim() || "Chuyến đi bất ngờ";
+            const budget = parseFloat(document.getElementById('travel-budget').value);
+            const months = parseInt(document.getElementById('travel-months').value);
+            const resultBox = document.getElementById('travel-plan-result');
+
+            if (!budget || !months || budget <= 0 || months <= 0) {
+                alert("Vui lòng nhập đầy đủ số tiền ước tính và số tháng nhé! ✈️");
+                return;
+            }
+
+            const totalDays = months * 30;
+            const perDay = Math.ceil(budget / totalDays);
+
+            resultBox.innerHTML = `
+                <div class="p-3 bg-[#FCE7F3] rounded-xl border border-pink-200 text-xs text-[#5C4033] space-y-1 mt-2">
+                    <p class="font-bold text-[#C27867]">✈️ Kế hoạch: ${location}</p>
+                    <p>💰 Tổng kinh phí: <b>${budget.toLocaleString('vi-VN')} VNĐ</b> trong <b>${months} tháng</b>.</p>
+                    <p class="text-sm font-bold text-[#C27867]">🎯 Mỗi ngày 2 đứa cần để dành: <b>${perDay.toLocaleString('vi-VN')} VNĐ / ngày</b></p>
+                    <p class="italic text-[10px] text-[#8C7A6B] mt-1">"Cùng nhau góp gạch xây dựng chuyến đi trong mơ nào!"</p>
+                </div>
+            `;
+            resultBox.classList.remove('hidden');
+        }
+
+        function sendCustomSOS() {
+            const reason = document.getElementById('custom-sos-input').value.trim();
+            if (!reason) {
+                alert("Em đang bị gì thì điền vào ô trống đã nhé! 🥺");
+                return;
+            }
+            alert(`🚨 TÍN HIỆU KHẨN CẤP ĐÃ GỬI VỀ MÁY ANH:\n"Anh ơi, em đang bị ${reason}!"\nChờ anh xử lý ngay lập tức nhé ❤️`);
+            document.getElementById('custom-sos-input').value = "";
+        }
+
+        // ĐỔI LINK SPOTIFY ĐỘNG TỪ Ô NHẬP LIỆU
+        function updateSpotifyEmbed() {
+            let userLink = document.getElementById('spotify-link-input').value.trim();
+            const frame = document.getElementById('spotify-iframe');
+            if (!userLink) return;
+
+            // Nếu người dùng dán link dạng share thường, chuyển sang dạng embed
+            if (userLink.includes('open.spotify.com/') && !userLink.includes('/embed/')) {
+                userLink = userLink.replace('spotify.com/', 'spotify.com/embed/');
+            }
+            frame.src = userLink;
+            alert("Đã đồng bộ bài hát/album Spotify mới của anh thành công! 🎶");
+        }
+
+        function switchAudioSubTab(sub) {
+            const btnMusic = document.getElementById('sub-music');
+            const btnPodcast = document.getElementById('sub-podcast');
+            const audioContent = document.getElementById('audio-list-container');
+
+            if (sub === 'music') {
+                btnMusic.className = "flex-1 py-2 rounded-xl text-xs font-bold bg-[#4A3B32] text-white transition";
+                btnPodcast.className = "flex-1 py-2 rounded-xl text-xs font-bold bg-white text-[#5C4033] border border-[#E3D5C6] transition";
+                
+                audioContent.innerHTML = `
+                    <div class="paper-card p-4 rounded-2xl space-y-3 text-center">
+                        <div class="flex items-center gap-2 justify-center mb-1">
+                            <span class="text-xl">🎧</span>
+                            <h4 class="font-bold text-[#4A3B32] text-sm">Spotify Của Anh (Trực Tiếp)</h4>
+                        </div>
+                        <p class="text-[11px] text-[#8C7A6B]">Dán link bài hát hoặc album từ Spotify của anh vào đây để đồng bộ:</p>
+                        
+                        <div class="flex gap-2">
+                            <input type="text" id="spotify-link-input" placeholder="Dán link Spotify vào đây..." class="flex-1 bg-white border border-[#E3D5C6] rounded-xl px-3 py-2 text-xs text-[#5C4033] focus:outline-none">
+                            <button onclick="updateSpotifyEmbed()" class="bg-[#C27867] text-white px-3 py-2 rounded-xl text-xs font-bold active:scale-95 transition">Đồng bộ</button>
+                        </div>
+
+                        <!-- Khung phát nhạc Spotify -->
+                        <iframe id="spotify-iframe" style="border-radius:16px" src="https://open.spotify.com/embed/track/0wvpRHXXuImyrccNEPAXBo?utm_source=generator" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                    </div>
+
+                    <!-- BÀI HÁT KỶ NIỆM: NGƯỜI IM LẶNG GẶP NGƯỜI HAY NÓI - HIEUTHUHAI -->
+                    <div class="paper-card p-4 rounded-2xl space-y-2 border-2 border-pink-200">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">💖</span>
+                            <div>
+                                <h4 class="font-bold text-[#4A3B32] text-sm">Bài Hát Kỷ Niệm Của Hai Đứa</h4>
+                                <p class="text-[11px] text-[#C27867]">"Người im lặng gặp người hay nói" - HIEUTHUHAI</p>
+                            </div>
+                        </div>
+                        <iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/0wvpRHXXuImyrccNEPAXBo?utm_source=generator" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                    </div>
+                `;
+            } else {
+                btnPodcast.className = "flex-1 py-2 rounded-xl text-xs font-bold bg-[#C27867] text-white transition";
+                btnMusic.className = "flex-1 py-2 rounded-xl text-xs font-bold bg-white text-[#5C4033] border border-[#E3D5C6] transition";
+
+                audioContent.innerHTML = podcastEpisodes.map(pod => `
+                    <div class="paper-card p-4 rounded-2xl space-y-2 border-l-4 border-l-[#C27867]">
+                        <div class="flex justify-between items-start">
+                            <h4 class="font-bold text-[#4A3B32] text-sm">${pod.title}</h4>
+                            <span class="text-[10px] bg-[#FCE7F3] text-[#C27867] px-2 py-0.5 rounded-full font-bold">${pod.date}</span>
+                        </div>
+                        <p class="text-xs text-[#6E5D52] leading-relaxed">${pod.desc}</p>
+                        <button onclick="alert('🎙️ Đang mở Podcast tâm tình từ anh... ❤️')" class="w-full py-2 bg-[#FAF6F0] hover:bg-[#F5EBE6] text-[#C27867] rounded-xl text-xs font-bold border border-[#E3D5C6] transition">Nghe lời nhắn của anh 🎧</button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function switchTab(tabName) {
+            updateNavActive(tabName);
+            const content = document.getElementById("main-content");
+            const container = document.getElementById("app-container");
+
+            container.style.backgroundColor = isNightTime() ? "#F3EFEA" : "#FAF6F0";
+
+            if (tabName === 'home') {
+                let journeysHTML = ourJourneys.map(j => `
+                    <div class="paper-card rounded-2xl overflow-hidden shadow-sm space-y-2 pb-3">
+                        <img src="${j.img}" alt="${j.title}" class="w-full h-36 object-cover">
+                        <div class="px-3 space-y-1">
+                            <div class="flex justify-between items-center text-[10px] text-[#C27867] font-bold">
+                                <span>✈️ ${j.date}</span>
+                            </div>
+                            <h4 class="font-bold text-[#4A3B32] text-sm">${j.title}</h4>
+                            <p class="text-xs text-[#7A6B60] leading-relaxed">${j.desc}</p>
+                        </div>
+                    </div>
+                `).join('');
+
+                content.innerHTML = `
+                    <div class="text-center py-2">
+                        <div class="inline-block p-4 bg-[#FCE7F3] rounded-3xl mb-2 shadow-sm"><span class="text-4xl">🌸</span></div>
+                        <h2 class="font-serif-title text-2xl text-[#4A3B32] mb-1">Chào công chúa Phương!</h2>
+                        <p class="text-xs text-[#7A6B60] px-4">Hôm nay của em thế nào? Mở sổ ra kể cho anh nghe nhé.</p>
+                    </div>
+
+                    <div class="paper-card p-4 rounded-3xl text-center">
+                        <p class="text-[11px] text-[#A39180] uppercase tracking-wider font-semibold">Hành trình bên nhau từ 17/05/2026</p>
+                        <div class="text-3xl font-serif-title text-[#C27867] font-bold my-1">${totalDays} <span class="text-base font-normal text-[#7A6B60]">ngày</span></div>
+                        <p class="font-handwriting text-xl text-[#7A6B60]">"Mỗi ngày bên em đều là một chương tuyệt vời."</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div onclick="switchTab('diary')" class="paper-card p-4 rounded-2xl cursor-pointer active:scale-95 transition text-center">
+                            <span class="text-2xl mb-1 block">✍️</span>
+                            <h3 class="font-bold text-[#4A3B32] text-sm">Nhật Ký Phòng</h3>
+                            <p class="text-[10px] text-[#8C7A6B]">Thời tiết cảm xúc</p>
+                        </div>
+                        <div onclick="switchTab('games')" class="paper-card p-4 rounded-2xl cursor-pointer active:scale-95 transition text-center">
+                            <span class="text-2xl mb-1 block">🎲</span>
+                            <h3 class="font-bold text-[#4A3B32] text-sm">Ăn Gì & Giải Trí</h3>
+                            <p class="text-[10px] text-[#8C7A6B]">Quay món & minigame</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 pt-2">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-serif-title text-lg text-[#4A3B32]">🎒 Những Hành Trình Đã Qua</h3>
+                        </div>
+
+                        <div class="paper-card p-4 rounded-2xl space-y-2 border border-[#D8A47F]/40">
+                            <p class="text-xs font-bold text-[#5C4033]">➕ Thêm hành trình mới của hai đứa:</p>
+                            <input type="text" id="journey-title" placeholder="Tên chuyến đi (VD: Đà Lạt mộng mơ...)" class="w-full bg-white border border-[#E3D5C6] rounded-xl px-3 py-2 text-xs text-[#5C4033] focus:outline-none">
+                            <div class="flex gap-2">
+                                <input type="text" id="journey-date" placeholder="Thời gian (VD: Tháng 8/2026)" class="w-1/2 bg-white border border-[#E3D5C6] rounded-xl px-3 py-2 text-xs text-[#5C4033] focus:outline-none">
+                                <input type="text" id="journey-img" placeholder="Link ảnh (Dán link ảnh vào đây)" class="w-1/2 bg-white border border-[#E3D5C6] rounded-xl px-3 py-2 text-xs text-[#5C4033] focus:outline-none">
+                            </div>
+                            <textarea id="journey-desc" rows="2" placeholder="Đôi lời kỷ niệm, cảm xúc chuyến đi..." class="w-full bg-white border border-[#E3D5C6] rounded-xl p-3 text-xs text-[#5C4033] focus:outline-none"></textarea>
+                            <button onclick="addNewJourney()" class="w-full bg-[#4A3B32] text-white py-2 rounded-xl text-xs font-bold shadow-sm active:scale-95 transition">Đăng Hành Trình Lên Trang Chủ 📸</button>
+                        </div>
+
+                        <div class="space-y-3">
+                            ${journeysHTML}
+                        </div>
+                    </div>
+                `;
+            } 
+            else if (tabName === 'diary') {
+                let entriesHTML = diaryEntries.map(entry => {
+                    const theme = roomWeatherThemes[entry.moodKey] || roomWeatherThemes['happy'];
+                    return `
+                    <div onclick="updateRoomWeather('${entry.moodKey}')" class="paper-card p-4 rounded-2xl space-y-2 cursor-pointer hover:border-[#D8A47F] transition">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-[#5C4033] font-semibold">📅 ${entry.date}</span>
+                            <span class="bg-[#F5EBE6] text-[#5C4033] px-2.5 py-0.5 rounded-full font-semibold">${theme.badge} ${theme.label}</span>
+                        </div>
+                        <h3 class="font-bold text-[#4A3B32] text-base">${entry.title}</h3>
+                        <p class="text-sm text-[#4A3B32]/85 leading-relaxed whitespace-pre-line">${entry.content}</p>
+                    </div>
+                `}).join('');
+
+                content.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <h2 class="font-serif-title text-xl text-[#4A3B32]">✍️ Căn Phòng Cảm Xúc</h2>
+                    </div>
+
+                    <div class="relative h-52 w-full rounded-3xl overflow-hidden shadow-md border-2 border-white">
+                        <img id="room-bg-img" src="${roomImageUrl}" alt="Our Room" class="w-full h-full object-cover transition-all duration-700">
+                        <div id="room-weather-overlay" class="absolute inset-0 transition-colors duration-700"></div>
+                        <div id="room-weather-effects" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+                        <div class="absolute bottom-3 left-3 right-3 bg-black/45 backdrop-blur-md text-white px-3 py-1.5 rounded-xl text-[11px] font-medium flex items-center justify-between">
+                            <span id="room-weather-caption">Nắng ấm ghé thăm căn phòng 🌈</span>
+                        </div>
+                    </div>
+                    
+                    <div class="paper-card p-4 rounded-2xl space-y-3">
+                        <div class="flex gap-2">
+                            <select id="diary-mood" onchange="updateRoomWeather(this.value)" class="bg-white border border-[#E3D5C6] rounded-xl px-2.5 py-2 text-xs font-semibold text-[#5C4033] focus:outline-none">
+                                <option value="happy">🥰 Hạnh phúc (Nắng & Cầu vồng)</option>
+                                <option value="joy">😊 Vui vẻ (Hoa lá tươi sáng)</option>
+                                <option value="miss">🥺 Nhớ anh (Sắc hồng ngọt ngào)</option>
+                                <option value="tired">😫 Hơi mệt (Ánh đèn ngủ dịu)</option>
+                                <option value="sad">😢 Buồn xíu (Trời đổ mưa)</option>
+                            </select>
+                            <input type="text" id="diary-title" placeholder="Tiêu đề hôm nay..." class="flex-1 bg-white border border-[#E3D5C6] rounded-xl px-3 py-2 text-xs text-[#5C4033] focus:outline-none">
+                        </div>
+                        <textarea id="diary-content" rows="3" placeholder="Viết tâm sự của em vào đây nha..." class="w-full bg-white border border-[#E3D5C6] rounded-xl p-3 text-xs text-[#5C4033] focus:outline-none"></textarea>
+                        <button onclick="saveDiary()" class="w-full bg-[#4A3B32] text-white py-2.5 rounded-xl text-xs font-bold shadow-sm active:scale-95 transition">Lưu Trang Nhật Ký 📌</button>
+                    </div>
+
+                    <div class="space-y-3 pt-1">
+                        <p class="text-xs font-bold text-[#4A3B32]/80 uppercase tracking-wider">Ký ức đã lưu (${diaryEntries.length})</p>
+                        ${entriesHTML}
+                    </div>
+                `;
+                updateRoomWeather('happy');
+            } 
+            else if (tabName === 'games') {
+                content.innerHTML = `
+                    <h2 class="font-serif-title text-xl text-[#4A3B32]">🎮 Ăn Gì & Giải Trí</h2>
+                    
+                    <div class="paper-card p-4 rounded-2xl space-y-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">🍱</span>
+                            <div>
+                                <h3 class="font-bold text-[#4A3B32] text-sm">Hôm Nay Ăn Bữa Chính Gì?</h3>
+                                <p class="text-[11px] text-[#8C7A6B]">Chọn đúng buổi để quay món no bụng nhé!</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="spinFoodCategory('breakfast', 'main-meal-result')" class="bg-[#FAF6F0] hover:bg-[#F5EBE6] border border-[#E3D5C6] py-2 rounded-xl text-xs font-bold text-[#5C4033] active:scale-95 transition">🌅 Bữa Sáng</button>
+                            <button onclick="spinFoodCategory('lunch', 'main-meal-result')" class="bg-[#FAF6F0] hover:bg-[#F5EBE6] border border-[#E3D5C6] py-2 rounded-xl text-xs font-bold text-[#5C4033] active:scale-95 transition">☀️ Bữa Trưa</button>
+                            <button onclick="spinFoodCategory('dinner', 'main-meal-result')" class="bg-[#FAF6F0] hover:bg-[#F5EBE6] border border-[#E3D5C6] py-2 rounded-xl text-xs font-bold text-[#5C4033] active:scale-95 transition">🌙 Bữa Tối</button>
+                        </div>
+                        <div id="main-meal-result" class="py-2.5 px-3 bg-white rounded-xl font-bold text-[#C27867] text-xs text-center border border-[#EFE8DD]">Chọn buổi bên trên để quay món chính!</div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="paper-card p-3.5 rounded-2xl flex flex-col justify-between space-y-2.5 text-center">
+                            <div>
+                                <span class="text-2xl">🍰</span>
+                                <h3 class="font-bold text-[#4A3B32] text-xs mt-1">Bữa Phụ / Ăn Vặt</h3>
+                                <p class="text-[10px] text-[#8C7A6B]">Không cơm mì xôi bánh mì</p>
+                            </div>
+                            <div id="snack-result" class="py-2 px-2 bg-white rounded-xl font-bold text-[#D97706] text-[11px] border border-[#EFE8DD] min-h-[42px] flex items-center justify-center">Bấm quay ăn vặt!</div>
+                            <button onclick="spinFoodCategory('snack', 'snack-result')" class="w-full bg-[#D8A47F] text-white py-2 rounded-xl text-[11px] font-bold active:scale-95 transition">Quay Bữa Phụ 🎲</button>
+                        </div>
+
+                        <div class="paper-card p-3.5 rounded-2xl flex flex-col justify-between space-y-2.5 text-center">
+                            <div>
+                                <span class="text-2xl">🧋</span>
+                                <h3 class="font-bold text-[#4A3B32] text-xs mt-1">Hôm Nay Uống Gì?</h3>
+                                <p class="text-[10px] text-[#8C7A6B]">Trà sữa, nước ép, cafe...</p>
+                            </div>
+                            <div id="drink-result" class="py-2 px-2 bg-white rounded-xl font-bold text-[#059669] text-[11px] border border-[#EFE8DD] min-h-[42px] flex items-center justify-center">Bấm quay đồ uống!</div>
+                            <button onclick="spinFoodCategory('drinks', 'drink-result')" class="w-full bg-[#4A3B32] text-white py-2 rounded-xl text-[11px] font-bold active:scale-95 transition">Quay Đồ Uống 🥤</button>
+                        </div>
+                    </div>
+
+                    <div class="paper-card p-4 rounded-2xl space-y-2">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-xl">🧠</span>
+                            <h3 class="font-bold text-[#4A3B32] text-sm">Đố Vui Hiểu Nhau (Gần 30 câu hỏi thú vị)</h3>
+                        </div>
+                        <div id="quiz-container"></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="paper-card p-4 rounded-2xl text-center space-y-2">
+                            <span class="text-2xl">💖</span>
+                            <h3 class="font-bold text-[#4A3B32] text-xs">Quỹ Tim Tích Lũy</h3>
+                            <div class="text-xl font-bold text-[#C27867]"><span id="heart-score-display">${heartScore}</span> / 100 tim</div>
+                            <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                                <div id="heart-progress-bar" class="bg-[#C27867] h-full transition-all duration-500" style="width: ${Math.min((heartScore/100)*100, 100)}%"></div>
+                            </div>
+                            <button onclick="addHeartScore(1)" class="w-full bg-[#FCE7F3] text-[#C27867] py-1.5 rounded-xl text-[11px] font-bold active:scale-90 transition">Thả Tim +1 ❤️</button>
+                        </div>
+
+                        <div class="paper-card p-4 rounded-2xl text-center flex flex-col justify-between space-y-2">
+                            <div>
+                                <span class="text-2xl">🃏</span>
+                                <h3 class="font-bold text-[#4A3B32] text-xs mt-1">Hộp Thẻ Bài</h3>
+                            </div>
+                            <button onclick="drawCard()" class="w-full bg-[#4A3B32] text-white py-2 rounded-xl text-xs font-bold active:scale-95 transition">Rút Thẻ ✨</button>
+                        </div>
+                    </div>
+                    <div id="card-result" class="hidden paper-card p-4 rounded-2xl border-[#D8A47F] text-xs space-y-2"></div>
+
+                    <div class="paper-card p-4 rounded-2xl space-y-3 border-2 border-[#D8A47F]/60">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">✈️</span>
+                            <div>
+                                <h3 class="font-bold text-[#4A3B32] text-sm">Kế Hoạch Du Lịch Trong Mơ</h3>
+                                <p class="text-[11px] text-[#8C7A6B]">Đủ 100 tim hoặc sẵn sàng là lên lịch đi chơi ngay!</p>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <input type="text" id="travel-location" placeholder="Địa điểm muốn đến (VD: Đà Lạt, Nha Trang...)" class="w-full bg-white border border-[#E3D5C6] rounded-xl px-3 py-2 text-xs text-[#5C4033] focus:outline-none">
+                            <div class="flex gap-2">
+                                <input type="number" id="travel-budget" placeholder="Tổng tiền ước tính (VNĐ)" class="flex-1 bg-white border border-[#E3D5C6] rounded-xl px-3 py-2 text-xs text-[#5C4033] focus:outline-none">
+                                <input type="number" id="travel-months" placeholder="Số tháng nữa đi" class="w-28 bg-white border border-[#E3D5C6] rounded-xl px-3 py-2 text-xs text-[#5C4033] focus:outline-none">
+                            </div>
+                            <button onclick="calculateTravelPlan()" class="w-full bg-[#D8A47F] text-white py-2.5 rounded-xl text-xs font-bold shadow-sm active:scale-95 transition">Tính Toán Tiết Kiệm Mỗi Ngày 🗺️</button>
+                        </div>
+                        <div id="travel-plan-result" class="hidden"></div>
+                    </div>
+                `;
+                renderQuiz();
+            }
+            else if (tabName === 'music') {
+                content.innerHTML = `
+                    <h2 class="font-serif-title text-xl text-[#4A3B32]">🎧 Góc Âm Thanh & Tâm Tình</h2>
+                    
+                    <div class="flex gap-2">
+                        <button id="sub-music" onclick="switchAudioSubTab('music')" class="flex-1 py-2 rounded-xl text-xs font-bold bg-[#4A3B32] text-white transition">🎵 Playlist Nhạc</button>
+                        <button id="sub-podcast" onclick="switchAudioSubTab('podcast')" class="flex-1 py-2 rounded-xl text-xs font-bold bg-white text-[#5C4033] border border-[#E3D5C6] transition">🎙️ Podcast Của Anh</button>
+                    </div>
+
+                    <div id="audio-list-container" class="space-y-3"></div>
+                `;
+                switchAudioSubTab('music');
+            } 
+            else if (tabName === 'sos') {
+                content.innerHTML = `
+                    <h2 class="font-serif-title text-xl text-[#4A3B32]">🚨 Trạm Tiếp Tế Nhanh</h2>
+                    <p class="text-xs text-[#8C7A6B]">Chọn nhanh tín hiệu bên dưới hoặc tự điền điều em đang cần nhé!</p>
+                    
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <button onclick="alert('Đã gửi tín hiệu: Em nhớ anh 🥺! Anh chạy qua với em ngay đây! ❤️')" class="paper-card p-3.5 rounded-2xl text-left font-bold text-xs text-[#4A3B32] hover:bg-[#FCE7F3] transition flex items-center gap-2"><span>🥺</span> Em nhớ anh</button>
+                        <button onclick="alert('Đã gửi tín hiệu: Em cần anh 🤗! Có mặt sau 5 phút!')" class="paper-card p-3.5 rounded-2xl text-left font-bold text-xs text-[#4A3B32] hover:bg-[#FCE7F3] transition flex items-center gap-2"><span>🤗</span> Em cần anh</button>
+                        <button onclick="alert('Đã gửi tín hiệu: Em đang đói bụng 🍔! Ship đồ ăn tới liền!')" class="paper-card p-3.5 rounded-2xl text-left font-bold text-xs text-[#4A3B32] hover:bg-[#F5EBE6] transition flex items-center gap-2"><span>🍔</span> Em đang đói</button>
+                        <button onclick="alert('Đã gửi tín hiệu: Thèm trà sữa 🧋! Chốt đơn ngay!')" class="paper-card p-3.5 rounded-2xl text-left font-bold text-xs text-[#4A3B32] hover:bg-[#F5EBE6] transition flex items-center gap-2"><span>🧋</span> Thèm trà sữa</button>
+                    </div>
+
+                    <div class="paper-card p-4 rounded-2xl space-y-3 border-[#C27867]/40">
+                        <h3 class="font-bold text-[#4A3B32] text-sm">✍️ Tín hiệu tùy chỉnh</h3>
+                        <div class="flex items-center gap-2 bg-white border border-[#E3D5C6] rounded-xl px-3 py-2.5">
+                            <span class="text-xs font-bold text-[#C27867] whitespace-nowrap">Em đang bị</span>
+                            <input type="text" id="custom-sos-input" placeholder="đau bụng / buồn ngủ / nhớ anh quá..." class="flex-1 text-xs text-[#5C4033] focus:outline-none">
+                        </div>
+                        <button onclick="sendCustomSOS()" class="w-full bg-[#C27867] text-white py-2.5 rounded-xl text-xs font-bold shadow-sm active:scale-95 transition">Gửi Tín Hiệu Cho Anh 💌</button>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
